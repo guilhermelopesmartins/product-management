@@ -10,10 +10,12 @@ using ProductManagement.Domain.Abstractions;
 using ProductManagement.Application.Abstractions;
 using ProductManagement.Application.Services;
 using ProductManagement.Infrastructure.Repositories;
+using ProductManagement.Functions.ExceptionHandling;
 
 var builder = FunctionsApplication.CreateBuilder(args);
 
 builder.ConfigureFunctionsWebApplication();
+builder.UseMiddleware<ExceptionHandlingMiddleware>();
 
 if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING")))
 {
