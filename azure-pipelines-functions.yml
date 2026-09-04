@@ -1,15 +1,10 @@
-# azure-pipelines-functions.yml
-# Parte 2 — Microsserviço de Produtos (Azure Function)
+# Environments do Azure DevOps usados neste pipeline:
+#   - 'staging'    -> job que publica no slot staging (Stage DeployStaging)
+#   - 'production' -> job que faz o swap staging -> production (Stage SwapToProduction)
 #
-# Pipeline de CI/CD: restore -> build -> testes -> publish artifact ->
-# deploy no slot staging -> swap staging -> production.
-#
-# Pré-requisitos (já existentes, reaproveitados da Parte 1):
-#   - Service Connection 'azure-student-connection' autorizada no projeto Azure DevOps
-#   - Environment 'production' criado
-#   - Function App 'func-products-guilhermehiringprocess123' já provisionada,
-#     com o slot 'staging' já criado e a connection string 'DefaultConnection'
-#     já configurada em ambos os slots.
+# Nota: os environments antigos 'production' e 'production-swap' (usados antes
+# desta correção) ficam órfãos no portal e podem ser removidos manualmente em
+# Pipelines -> Environments, se desejado.
 
 trigger:
   branches:
@@ -99,7 +94,7 @@ stages:
     jobs:
       - deployment: DeployToStaging
         displayName: 'Deploy Function App to staging slot'
-        environment: 'production'
+        environment: 'staging'
         pool:
           vmImage: 'ubuntu-latest'
         strategy:
@@ -127,7 +122,7 @@ stages:
     jobs:
       - deployment: SwapSlots
         displayName: 'Swap staging and production slots'
-        environment: 'production-swap'
+        environment: 'production'
         pool:
           vmImage: 'ubuntu-latest'
         strategy:
