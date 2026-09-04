@@ -1,12 +1,15 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using ProductManagement.Domain.Abstractions;
+using ProductManagement.Domain.Exceptions;
 using ProductManagement.Domain.Models;
 
 namespace ProductManagement.Infrastructure.Repositories;
 
 public class ProductRepository : IProductRepository
 {
+    private const int ForeignKeyViolationErrorNumber = 547;
+
     private readonly string _connectionString;
 
     public ProductRepository(string connectionString)
@@ -47,11 +50,18 @@ public class ProductRepository : IProductRepository
             StockQty = stockQty
         };
 
-        var result = await connection.QuerySingleAsync<ProductRecord>(
-            "EXEC dbo.sp_InsertProduct @StoreId, @Sku, @Name, @Description, @Price, @Currency, @StockQty",
-            parameters);
+        try
+        {
+            var result = await connection.QuerySingleAsync<ProductRecord>(
+                "EXEC dbo.sp_InsertProduct @StoreId, @Sku, @Name, @Description, @Price, @Currency, @StockQty",
+                parameters);
 
-        return result;
+            return result;
+        }
+        catch (SqlException ex) when (ex.Number == ForeignKeyViolationErrorNumber)
+        {
+            throw new StoreNotFoundException(storeId);
+        }
     }
 
     public async Task<ProductRecord?> GetProductByIdAsync(Guid productId)
