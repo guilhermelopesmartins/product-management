@@ -1,10 +1,9 @@
-﻿using ProductManagement.Application.Abstractions;
-using ProductManagement.Application.DTOs;
+﻿using System.Text.Json;
+using ProductManagement.Application.Abstractions;
 using ProductManagement.Application.DTOs.Requests;
 using ProductManagement.Application.DTOs.Responses;
 using ProductManagement.Domain.Abstractions;
 using ProductManagement.Domain.Models;
-using System.Text.Json;
 
 namespace ProductManagement.Application.Services;
 
@@ -32,16 +31,28 @@ public class ProductsService : IProductsService
     public async Task<ProductResponse> CreateProductAsync(CreateProductRequest request)
     {
         var record = await _repository.InsertProductAsync(
-            request.StoreId,
-            request.Sku,
-            request.Name,
-            request.Description,
-            request.Price,
-            request.Currency,
-            request.StockQty);
+            request.StoreId, request.Sku, request.Name, request.Description,
+            request.Price, request.Currency, request.StockQty);
 
         return MapToResponse(record);
     }
+
+    public async Task<ProductResponse?> GetProductByIdAsync(Guid productId)
+    {
+        var record = await _repository.GetProductByIdAsync(productId);
+        return record is null ? null : MapToResponse(record);
+    }
+
+    public async Task<ProductResponse?> UpdateProductAsync(Guid productId, UpdateProductRequest request)
+    {
+        var record = await _repository.UpdateProductAsync(
+            productId, request.Name, request.Description,
+            request.Price, request.Currency, request.StockQty, request.IsActive);
+
+        return record is null ? null : MapToResponse(record);
+    }
+
+    public Task<bool> DeleteProductAsync(Guid productId) => _repository.DeleteProductAsync(productId);
 
     private static ProductResponse MapToResponse(ProductRecord record) => new()
     {
