@@ -1,4 +1,4 @@
-﻿namespace ProductManagement.Application;
+﻿namespace ProductManagement.Domain.Abstractions;
 
 public interface IProductRepository
 {

@@ -4,6 +4,12 @@
 # Azure Functions localsettings file
 local.settings.json
 
+# Azurite local storage emulator state
+AzuriteConfig
+__azurite_db_*__.json
+__blobstorage__/
+__queuestorage__/
+
 # User-specific files
 *.suo
 *.user

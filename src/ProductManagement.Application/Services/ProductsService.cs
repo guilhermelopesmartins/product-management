@@ -1,9 +1,12 @@
-﻿using ProductManagement.Application.DTOs;
+﻿using ProductManagement.Application.Abstractions;
+using ProductManagement.Application.DTOs;
+using ProductManagement.Application.DTOs.Responses;
+using ProductManagement.Domain.Abstractions;
 using System.Text.Json;
 
-namespace ProductManagement.Application;
+namespace ProductManagement.Application.Services;
 
-public class ProductsService
+public class ProductsService : IProductsService
 {
     private readonly IProductRepository _repository;
 

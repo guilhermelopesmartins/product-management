@@ -2,6 +2,8 @@ using Moq;
 using FluentAssertions;
 using ProductManagement.Application;
 using ProductManagement.Application.DTOs;
+using ProductManagement.Domain.Abstractions;
+using ProductManagement.Application.Services;
 using Xunit;
 
 namespace ProductManagement.Tests;

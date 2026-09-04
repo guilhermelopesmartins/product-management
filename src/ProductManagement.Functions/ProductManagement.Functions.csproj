@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+	<TargetFramework>net10.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -20,6 +20,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ProductManagement.Application\ProductManagement.Application.csproj" />
+	<ProjectReference Include="..\ProductManagement.Domain\ProductManagement.Domain.csproj" />
+	<ProjectReference Include="..\ProductManagement.Infrastructure\ProductManagement.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

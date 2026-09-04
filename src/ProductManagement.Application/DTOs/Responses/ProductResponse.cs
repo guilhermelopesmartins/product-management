@@ -1,4 +1,4 @@
-﻿namespace ProductManagement.Application.DTOs;
+﻿namespace ProductManagement.Application.DTOs.Responses;
 
 public sealed record ProductResponse
 {
