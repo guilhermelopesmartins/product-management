@@ -63,6 +63,7 @@ stages:
               command: 'test'
               projects: '$(testsProjectPath)'
               arguments: '--configuration $(buildConfiguration) --no-build --logger trx --results-directory $(Agent.TempDirectory)/TestResults'
+              publishTestResults: false
 
           - task: PublishTestResults@2
             displayName: 'Publish test results'
