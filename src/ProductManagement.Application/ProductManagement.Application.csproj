@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\ProductManagement.Domain\ProductManagement.Domain.csproj" />
-  </ItemGroup>
-
   <PropertyGroup>
 	<TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\ProductManagement.Domain\ProductManagement.Domain.csproj" />
+		<ProjectReference Include="..\..\src\ProductManagement.Infrastructure\ProductManagement.Infrastructure.csproj" />
+	</ItemGroup>
 </Project>

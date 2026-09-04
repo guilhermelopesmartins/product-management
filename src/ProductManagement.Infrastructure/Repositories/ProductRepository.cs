@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using ProductManagement.Domain.Abstractions;
+using ProductManagement.Domain.Models;
 
 namespace ProductManagement.Infrastructure.Repositories;
 
@@ -22,5 +23,10 @@ public class ProductRepository : IProductRepository
             new { StoreId = storeId });
 
         return result;
+    }
+
+    public Task<ProductRecord> InsertProductAsync(Guid storeId, string sku, string name, string? description, decimal price, string currency, int stockQty)
+    {
+        throw new NotImplementedException();
     }
 }
