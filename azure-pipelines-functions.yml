@@ -1,0 +1,144 @@
+# azure-pipelines-functions.yml
+# Parte 2 — Microsserviço de Produtos (Azure Function)
+#
+# Pipeline de CI/CD: restore -> build -> testes -> publish artifact ->
+# deploy no slot staging -> swap staging -> production.
+#
+# Pré-requisitos (já existentes, reaproveitados da Parte 1):
+#   - Service Connection 'azure-student-connection' autorizada no projeto Azure DevOps
+#   - Environment 'production' criado
+#   - Function App 'func-products-guilhermehiringprocess123' já provisionada,
+#     com o slot 'staging' já criado e a connection string 'DefaultConnection'
+#     já configurada em ambos os slots.
+
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  functionAppName: 'func-products-guilhermehiringprocess123'
+  resourceGroupName: 'rg-backend-challenge'
+  azureSubscription: 'azure-student-connection'
+  functionsProjectPath: 'src/ProductManagement.Functions/ProductManagement.Functions.csproj'
+  testsProjectPath: 'tests/ProductManagement.Tests/ProductManagement.Tests.csproj'
+  publishOutputDirectory: '$(Build.ArtifactStagingDirectory)/functions-publish'
+
+stages:
+  # ============================================================
+  # Stage 1 — Build e testes
+  # ============================================================
+  - stage: Build
+    displayName: 'Build, Test and Publish Artifact'
+    jobs:
+      - job: BuildAndTest
+        displayName: 'Build and Test'
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Install .NET 10 SDK'
+            inputs:
+              packageType: 'sdk'
+              version: '10.x'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Restore'
+            inputs:
+              command: 'restore'
+              projects: '**/*.csproj'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Build'
+            inputs:
+              command: 'build'
+              projects: '**/*.csproj'
+              arguments: '--configuration $(buildConfiguration) --no-restore'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Run unit tests'
+            inputs:
+              command: 'test'
+              projects: '$(testsProjectPath)'
+              arguments: '--configuration $(buildConfiguration) --no-build --logger trx --results-directory $(Agent.TempDirectory)/TestResults'
+
+          - task: PublishTestResults@2
+            displayName: 'Publish test results'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'VSTest'
+              testResultsFiles: '$(Agent.TempDirectory)/TestResults/*.trx'
+              failTaskOnFailedTests: true
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Publish Functions project'
+            inputs:
+              command: 'publish'
+              publishWebProjects: false
+              projects: '$(functionsProjectPath)'
+              arguments: '--configuration $(buildConfiguration) --output $(publishOutputDirectory) --no-build'
+              zipAfterPublish: true
+
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish build artifact'
+            inputs:
+              PathtoPublish: '$(publishOutputDirectory)'
+              ArtifactName: 'functions-drop'
+              publishLocation: 'Container'
+
+  # ============================================================
+  # Stage 2 — Deploy no slot staging
+  # ============================================================
+  - stage: DeployStaging
+    displayName: 'Deploy to Staging Slot'
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - deployment: DeployToStaging
+        displayName: 'Deploy Function App to staging slot'
+        environment: 'production'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureFunctionApp@2
+                  displayName: 'Deploy to staging slot'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    appType: 'functionApp'
+                    appName: '$(functionAppName)'
+                    deployToSlotOrASE: true
+                    resourceGroupName: '$(resourceGroupName)'
+                    slotName: 'staging'
+                    package: '$(Pipeline.Workspace)/functions-drop/**/*.zip'
+
+  # ============================================================
+  # Stage 3 — Swap staging -> production
+  # ============================================================
+  - stage: SwapToProduction
+    displayName: 'Swap Staging to Production'
+    dependsOn: DeployStaging
+    condition: succeeded()
+    jobs:
+      - deployment: SwapSlots
+        displayName: 'Swap staging and production slots'
+        environment: 'production-swap'
+        pool:
+          vmImage: 'ubuntu-latest'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureAppServiceManage@0
+                  displayName: 'Swap staging -> production'
+                  inputs:
+                    azureSubscription: '$(azureSubscription)'
+                    action: 'Swap Slots'
+                    webAppName: '$(functionAppName)'
+                    resourceGroupName: '$(resourceGroupName)'
+                    sourceSlot: 'staging'
+                    swapWithProduction: true
