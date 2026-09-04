@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "ProductService_Functions": {
+    "ProductManagement.Functions": {
       "commandName": "Project",
       "commandLineArgs": "--port 7223",
       "launchBrowser": false

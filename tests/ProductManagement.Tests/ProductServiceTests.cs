@@ -1,11 +1,11 @@
-﻿using Moq;
+using Moq;
 using FluentAssertions;
-using ProductService.Application;
+using ProductManagement.Application;
 using Xunit;
 
-namespace ProductService.Tests;
+namespace ProductManagement.Tests;
 
-public class ProductServiceTests
+public class ProductManagementTests
 {
     [Fact]
     public async Task GetProductsAsync_ShouldReturnProductList_WhenRepositoryReturnsValidJson()
