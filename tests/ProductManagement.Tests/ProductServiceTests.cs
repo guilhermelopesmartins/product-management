@@ -5,6 +5,7 @@ using ProductManagement.Application.DTOs;
 using ProductManagement.Application.DTOs.Requests;
 using ProductManagement.Application.Services;
 using ProductManagement.Domain.Abstractions;
+using ProductManagement.Domain.Exceptions;
 using ProductManagement.Domain.Models;
 using Xunit;
 
@@ -80,6 +81,37 @@ public class ProductServiceTests
         result.Sku.Should().Be("TEST-002");
         result.Price.Should().Be(29.90m);
         result.StockQty.Should().Be(5);
+    }
+
+    [Fact]
+    public async Task CreateProductAsync_ShouldPropagateStoreNotFoundException_WhenRepositoryThrowsIt()
+    {
+        // Arrange
+        var mockRepository = new Mock<IProductRepository>();
+        var storeId = Guid.NewGuid();
+
+        mockRepository
+            .Setup(r => r.InsertProductAsync(storeId, "TEST-003", "Produto Orfao", null, 10.00m, "BRL", 1))
+            .ThrowsAsync(new StoreNotFoundException(storeId));
+
+        var sut = new ProductsService(mockRepository.Object);
+
+        var request = new CreateProductRequest
+        {
+            StoreId = storeId,
+            Sku = "TEST-003",
+            Name = "Produto Orfao",
+            Price = 10.00m,
+            Currency = "BRL",
+            StockQty = 1
+        };
+
+        // Act
+        var act = () => sut.CreateProductAsync(request);
+
+        // Assert
+        await act.Should().ThrowAsync<StoreNotFoundException>()
+            .Where(ex => ex.StoreId == storeId);
     }
 
     [Fact]
