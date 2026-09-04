@@ -13,4 +13,11 @@ public interface IProductRepository
     decimal price,
     string currency,
     int stockQty);
+    Task<ProductRecord?> GetProductByIdAsync(Guid productId);
+
+    Task<ProductRecord?> UpdateProductAsync(
+        Guid productId, string name, string? description,
+        decimal price, string currency, int stockQty, bool isActive);
+
+    Task<bool> DeleteProductAsync(Guid productId);
 }

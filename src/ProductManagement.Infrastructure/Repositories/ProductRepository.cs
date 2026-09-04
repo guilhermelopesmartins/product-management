@@ -53,4 +53,19 @@ public class ProductRepository : IProductRepository
 
         return result;
     }
+
+    public Task<ProductRecord?> UpdateProductAsync(Guid productId, string name, string? description, decimal price, string currency, int stockQty, bool isActive)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> DeleteProductAsync(Guid productId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<ProductRecord?> GetProductByIdAsync(Guid productId)
+    {
+        throw new NotImplementedException();
+    }
 }

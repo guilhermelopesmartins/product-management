@@ -81,4 +81,95 @@ public class ProductServiceTests
         result.Price.Should().Be(29.90m);
         result.StockQty.Should().Be(5);
     }
+
+    [Fact]
+    public async Task GetProductByIdAsync_ShouldReturnProduct_WhenProductExists()
+    {
+        var mockRepository = new Mock<IProductRepository>();
+        var productId = Guid.NewGuid();
+        var record = new ProductRecord
+        {
+            ProductId = productId,
+            StoreId = Guid.NewGuid(),
+            Sku = "TEST-004",
+            Name = "Produto Existente",
+            Price = 15.00m,
+            Currency = "BRL",
+            StockQty = 3,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+        mockRepository.Setup(r => r.GetProductByIdAsync(productId)).ReturnsAsync(record);
+
+        var sut = new ProductsService(mockRepository.Object);
+        var result = await sut.GetProductByIdAsync(productId);
+
+        result.Should().NotBeNull();
+        result!.Sku.Should().Be("TEST-004");
+    }
+
+    [Fact]
+    public async Task GetProductByIdAsync_ShouldReturnNull_WhenProductDoesNotExist()
+    {
+        var mockRepository = new Mock<IProductRepository>();
+        var productId = Guid.NewGuid();
+        mockRepository.Setup(r => r.GetProductByIdAsync(productId)).ReturnsAsync((ProductRecord?)null);
+
+        var sut = new ProductsService(mockRepository.Object);
+        var result = await sut.GetProductByIdAsync(productId);
+
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task UpdateProductAsync_ShouldReturnUpdatedProduct_WhenProductExists()
+    {
+        var mockRepository = new Mock<IProductRepository>();
+        var productId = Guid.NewGuid();
+        var record = new ProductRecord
+        {
+            ProductId = productId,
+            StoreId = Guid.NewGuid(),
+            Sku = "TEST-005",
+            Name = "Produto Atualizado",
+            Price = 25.00m,
+            Currency = "BRL",
+            StockQty = 8,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        mockRepository
+            .Setup(r => r.UpdateProductAsync(productId, "Produto Atualizado", null, 25.00m, "BRL", 8, true))
+            .ReturnsAsync(record);
+
+        var sut = new ProductsService(mockRepository.Object);
+        var request = new UpdateProductRequest
+        {
+            Name = "Produto Atualizado",
+            Price = 25.00m,
+            Currency = "BRL",
+            StockQty = 8,
+            IsActive = true
+        };
+
+        var result = await sut.UpdateProductAsync(productId, request);
+
+        result.Should().NotBeNull();
+        result!.Name.Should().Be("Produto Atualizado");
+        result.StockQty.Should().Be(8);
+    }
+
+    [Fact]
+    public async Task DeleteProductAsync_ShouldReturnTrue_WhenProductWasDeleted()
+    {
+        var mockRepository = new Mock<IProductRepository>();
+        var productId = Guid.NewGuid();
+        mockRepository.Setup(r => r.DeleteProductAsync(productId)).ReturnsAsync(true);
+
+        var sut = new ProductsService(mockRepository.Object);
+        var result = await sut.DeleteProductAsync(productId);
+
+        result.Should().BeTrue();
+    }
 }
