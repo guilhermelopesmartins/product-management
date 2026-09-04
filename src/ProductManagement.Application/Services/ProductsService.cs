@@ -1,7 +1,9 @@
 ﻿using ProductManagement.Application.Abstractions;
 using ProductManagement.Application.DTOs;
+using ProductManagement.Application.DTOs.Requests;
 using ProductManagement.Application.DTOs.Responses;
 using ProductManagement.Domain.Abstractions;
+using ProductManagement.Domain.Models;
 using System.Text.Json;
 
 namespace ProductManagement.Application.Services;
@@ -26,4 +28,30 @@ public class ProductsService : IProductsService
 
         return products ?? [];
     }
+
+    public async Task<ProductResponse> CreateProductAsync(CreateProductRequest request)
+    {
+        var record = await _repository.InsertProductAsync(
+            request.StoreId,
+            request.Sku,
+            request.Name,
+            request.Description,
+            request.Price,
+            request.Currency,
+            request.StockQty);
+
+        return MapToResponse(record);
+    }
+
+    private static ProductResponse MapToResponse(ProductRecord record) => new()
+    {
+        ProductId = record.ProductId,
+        StoreId = record.StoreId,
+        Sku = record.Sku,
+        Name = record.Name,
+        Price = record.Price,
+        Currency = record.Currency,
+        StockQty = record.StockQty,
+        IsActive = record.IsActive
+    };
 }

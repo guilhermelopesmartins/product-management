@@ -25,8 +25,32 @@ public class ProductRepository : IProductRepository
         return result;
     }
 
-    public Task<ProductRecord> InsertProductAsync(Guid storeId, string sku, string name, string? description, decimal price, string currency, int stockQty)
+    public async Task<ProductRecord> InsertProductAsync(
+        Guid storeId,
+        string sku,
+        string name,
+        string? description,
+        decimal price,
+        string currency,
+        int stockQty)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+
+        var parameters = new
+        {
+            StoreId = storeId,
+            Sku = sku,
+            Name = name,
+            Description = description,
+            Price = price,
+            Currency = currency,
+            StockQty = stockQty
+        };
+
+        var result = await connection.QuerySingleAsync<ProductRecord>(
+            "EXEC dbo.sp_InsertProduct @StoreId, @Sku, @Name, @Description, @Price, @Currency, @StockQty",
+            parameters);
+
+        return result;
     }
 }
