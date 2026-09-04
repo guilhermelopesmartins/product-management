@@ -54,18 +54,36 @@ public class ProductRepository : IProductRepository
         return result;
     }
 
-    public Task<ProductRecord?> UpdateProductAsync(Guid productId, string name, string? description, decimal price, string currency, int stockQty, bool isActive)
+    public async Task<ProductRecord?> GetProductByIdAsync(Guid productId)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+
+        return await connection.QuerySingleOrDefaultAsync<ProductRecord>(
+            "EXEC dbo.sp_GetProductById @ProductId",
+            new { ProductId = productId });
     }
 
-    public Task<bool> DeleteProductAsync(Guid productId)
+    public async Task<ProductRecord?> UpdateProductAsync(
+        Guid productId, string name, string? description,
+        decimal price, string currency, int stockQty, bool isActive)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+
+        var parameters = new { ProductId = productId, Name = name, Description = description, Price = price, Currency = currency, StockQty = stockQty, IsActive = isActive };
+
+        return await connection.QuerySingleOrDefaultAsync<ProductRecord>(
+            "EXEC dbo.sp_UpdateProduct @ProductId, @Name, @Description, @Price, @Currency, @StockQty, @IsActive",
+            parameters);
     }
 
-    public Task<ProductRecord?> GetProductByIdAsync(Guid productId)
+    public async Task<bool> DeleteProductAsync(Guid productId)
     {
-        throw new NotImplementedException();
+        using var connection = new SqlConnection(_connectionString);
+
+        var deletedCount = await connection.QuerySingleAsync<int>(
+            "EXEC dbo.sp_DeleteProduct @ProductId",
+            new { ProductId = productId });
+
+        return deletedCount > 0;
     }
 }
